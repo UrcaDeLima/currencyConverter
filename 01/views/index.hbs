@@ -1,6 +1,134 @@
 <h1>Рынок наличной валюты</h1>
 
+<div class="converter">
+  <div id="convert-from">
+    <div class="calc_title">У меня есть</div>
+    <div class="converter-switcher items"></div>
+    <div class="converter-switcher">
+      <select class="list" name="list">
+        <option value="RUB">RUB</option>
+        <option value="EUR">EUR</option>
+        <option value="BTC">BTC</option>
+        <option value="LTC">LTC</option>
+      </select>
+    </div>
+    <br>
+    <div class="input">
+      <input type="text" class="amount">
+      <div class="helper">2</div>
+    </div>
+  </div>
+  <div class="calc__center">
+    <div class="calc__reverse"></div>
+  </div>
+  <div id="convert-to">
+    <div class="calc_title">Хочу приобрести</div>
+    <div class="converter-switcher items"></div>
+    <div class="converter-switcher">
+      <select class="list" name="list">
+        <option value="RUB">RUB</option>
+        <option value="EUR">EUR</option>
+        <option value="BTC">BTC</option>
+        <option value="LTC">LTC</option>
+      </select>
+    </div>
+    <br>
+    <div class="input">
+      <input type="text" class="amount" readonly>
+      <div class="helper">1$ = 64р</div>
+    </div>
+  </div>
+</div>
+
 <script type="text/javascript">
+
+  const getPrices = (convertFrom, convertTo) => {
+    try {//http://apilayer.net/api/live?access_key=e51025cf18fbbc92b1211172d722d1ef&currencies="+ convertTo +"&source="+ convertFrom +"&format=1
+      //console.log(convertFrom);
+      return axios.get('http://data.fixer.io/api/latest?access_key=515ab4b259053480b6f00bc6961bb954');
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const conversion = async (convertFrom, convertTo) => {
+    const prices = getPrices(convertFrom, convertTo)
+      .then(response => {
+        console.log(response.data);
+        return response;
+        $("#convert-from input").val(response.data.rates.AED);
+      })
+      .catch(error => {
+        console.log(error);
+      })
+  }
+  console.log(conversion(1, 2));
+
+  $("#convert-from .amount").on("input", function(){
+    $("#convert-to .amount").val($(this).val() * $("#convert-from .helper").text());
+  });
+
+  $(".calc__reverse").on("click", function(){
+    var tmp, html, val;
+
+    if($("#convert-from .active").val() && !$("#convert-to .active").val()){
+      tmp = $("#convert-from .active").val();
+      $("#convert-from .active").removeClass("active");
+      $("#convert-from [data="+ $("#convert-to .active").attr("data") +"]").addClass("active");
+      $("#convert-to .active").removeClass("active");
+      $("#convert-to .list").addClass("active");
+      $("#convert-to option[value="+ tmp +"]").attr("selected", "selected");
+      $('#convert-from option').removeAttr("selected");
+    }else if(!$("#convert-from .active").val() && $("#convert-to .active").val()){
+      tmp = $("#convert-to .active").val();
+      $("#convert-to .active").removeClass("active");
+      $("#convert-to [data="+ $("#convert-from .active").attr("data") +"]").addClass("active");
+      $("#convert-from .active").removeClass("active");
+      $("#convert-from .list").addClass("active");
+      $("#convert-from option[value="+ tmp +"]").attr("selected", "selected");
+      $('#convert-to option').removeAttr("selected");
+    }else if($("#convert-from .active").val() && $("#convert-to .active").val()){
+      tmp = $("#convert-from .active").val();
+      $("#convert-from .active").removeClass("active");
+      $("#convert-from .list").addClass("active");
+      $("#convert-to .active").removeClass("active");
+      $("#convert-to .list").addClass("active");
+      html = $("#convert-from select option:selected").html();
+      val = $("#convert-from select option:selected").val();
+      $("#convert-from select [value='"+ $("#convert-to select option:selected").val() +"']").remove();
+      $("#convert-from select").prepend( $('<option value="'+ $("#convert-to select option:selected").val() +'">'+ $("#convert-to select option:selected").html() +'</option>'));
+      $("#convert-from option[value="+ $("#convert-to .active").val() +"]").attr("selected", "selected");
+      $("#convert-to select [value='"+ val +"']").remove();
+      $("#convert-to select").prepend( $('<option value="'+ val +'">'+ html +'</option>'));
+      $("#convert-to option[value="+ tmp +"]").attr("selected", "selected");
+    }else if(!$("#convert-from .active").val() && !$("#convert-to .active").val()){
+      tmp = $("#convert-from .active").attr("data");
+      $("#convert-from .active").removeClass("active");
+      $("#convert-from [data="+ $("#convert-to .active").attr("data") +"]").addClass("active");
+      $("#convert-to .active").removeClass("active");
+      $("#convert-to [data="+ tmp +"]").addClass("active");
+    }
+  });
+
+  $(".items").on("click", ".calc_switcher_item", function(){
+      $("[id=" + $(this).parent().parent().attr("id") + "] .active").removeClass("active");
+      $(this).addClass("active");
+  });
+
+  $(".list").on("change", function(){
+      $("[id=" + $(this).parent().parent().attr("id") + "] .calc_switcher_item").removeClass("active");
+      $(this).addClass("active");
+  });
+
+  $(document).ready(function(){
+    for(var i = 0; i < 4; i++){ // после получения через api списка валют поменять 4 на количество этих валют
+      var elementClassic = '<div class="calc_switcher_item" data="'+ i +'">USD</div>';
+      $('.items').append(elementClassic);
+    }
+
+    $(".items").find(':first-child').addClass("active");
+  });
+
   $(document).ready(function(){
     // $.ajax({
     //     url: "https://currate.ru/api/?get=rates&pairs=USDRUB,EURRUB&key=763cfb0fa49f7c16319810bbf106680d",
@@ -111,19 +239,19 @@
     //   }
     // );
 
-    $.ajax({//111111111111111   currency_list
-      type: 'GET',
-      url: "https://currate.ru/api/?get=rates&pairs=USDRUB,EURRUB&key=763cfb0fa49f7c16319810bbf106680d",
-      dataType:'jsonp',
-      success: function(data) {
-        //JSON.parse(data);
-        //console.log(JSON.parse(data));
-        console.log(data);
-      }
-      //error: function(error) {
-        //console.log("FAIL....=================");
-      //}
-    });
+    // $.ajax({//111111111111111   currency_list
+    //   type: 'GET',
+    //   url: "https://currate.ru/api/?get=rates&pairs=USDRUB,EURRUB&key=763cfb0fa49f7c16319810bbf106680d",
+    //   dataType:'jsonp',
+    //   success: function(data) {
+    //     //JSON.parse(data);
+    //     //console.log(JSON.parse(data));
+    //     console.log(data);
+    //   }
+    //   //error: function(error) {
+    //     //console.log("FAIL....=================");
+    //   //}
+    // });
 
     // fetch('https://currate.ru/api/?get=rates&pairs=USDRUB,EURRUB&key=763cfb0fa49f7c16319810bbf106680d')
     // .then(
@@ -144,6 +272,183 @@
     //   console.log('Fetch Error :-S', err);
     // });
 
+    //function addUser(details) {
+      // return fetch('https://currate.ru/api/?get=rates&pairs=USDRUB,EURRUB&key=763cfb0fa49f7c16319810bbf106680d', {
+      //   mode: 'cors',
+      //   method: 'GET',
+      //   credentials: 'include',
+      //   //body: JSON.stringify(details),
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Accept': 'application/json',
+      //     'X-XSRF-TOKEN': getCookieValue('XSRF-TOKEN')
+      //   }
+      // }).then(response => {
+      //   return response.json().then(data => {
+      //     if (response.ok) {
+      //       return data;
+      //     } else {
+      //       return Promise.reject({status: response.status, data});
+      //     }
+      //   });
+      // });
+  //  }
+
+  // fetch('https://currate.ru/api/?key=763cfb0fa49f7c16319810bbf106680d')
+  //   .then(res => res.json())
+  //   .then(json => console.log(json));
+
+  // fetch('https://free.currconv.com/api/v7/convert?q=USD_PHP,PHP_USD&compact=ultra&apiKey=46c5e223946ddbf1f523')
+  // .then(response => {
+  //   console.log(response.headers.get('Content-Type'))
+  //   console.log(response.headers.get('Date'))
+  // })
+
+  // endpoint = 'live'
+  // access_key = 'YOUR_ACCESS_KEY';
+  //
+  // // get the most recent exchange rates via the "live" endpoint:
+  // $.ajax({
+  //     url: "http://data.fixer.io/api/latest?access_key=515ab4b259053480b6f00bc6961bb954",333333333333333333333
+  //     dataType: 'jsonp',
+  //     success: function(json) {
+  //
+  //         // exchange rata data is stored in json.quotes
+  //         console.log(json.quotes);
+  //
+  //         // source currency is stored in json.source
+  //         console.log(json.source);
+  //
+  //         // timestamp can be accessed in json.timestamp
+  //         console.log(json.timestamp);
+  //
+  //     }
+  // });
+
+  //   endpoint = 'latest'
+  // access_key = '515ab4b259053480b6f00bc6961bb954';//////////////2222222222222222
+  //
+  // // get the most recent exchange rates via the "latest" endpoint:
+  // $.ajax({
+  //     url: "//api.exchangeratesapi.io/latest?base=GBP&symbols=USD",
+  //     dataType: 'jsonp',
+  //     success: function(json) {
+  //
+  //         // exchange rata data is stored in json.rates
+  //         console.log(json.rates);
+  //
+  //         // base currency is stored in json.base
+  //         console.log(json.base);
+  //
+  //         // timestamp can be accessed in json.timestamp
+  //         console.log(json.timestamp);
+  //
+  //     }
+  // });
+
+  // endpoint = 'convert';
+  // access_key = '515ab4b259053480b6f00bc6961bb954';
+  //
+  // // define from currency, to currency, and amount
+  // from = 'RUB';
+  // to = 'GBP';
+  // amount = '10';
+  //
+  // // execute the conversion using the "convert" endpoint:
+  // $.ajax({
+  //     url: 'http://data.fixer.io/api/' + endpoint + '?access_key=' + access_key +'&from=' + from + '&to=' + to + '&amount=' + amount,
+  //     dataType: 'jsonp',
+  //     success: function(json) {
+  //
+  //         // access the conversion result in json.result
+  //         console.log(json.result);
+  //
+  //     }
+  // });
+
+  // set endpoint and your access key
+// endpoint = 'convert';
+// access_key = 'e51025cf18fbbc92b1211172d722d1ef';
+//
+// // define from currency, to currency, and amount
+// from = 'EUR';
+// to = 'GBP';
+// amount = '10';
+//
+// // execute the conversion using the "convert" endpoint:
+// $.ajax({
+//     url: 'https://apilayer.net/api/' + endpoint + '?access_key=' + access_key +'&from=' + from + '&to=' + to + '&amount=' + amount,
+//     dataType: 'jsonp',
+//     success: function(json) {
+//
+//         // access the conversion result in json.result
+//         console.log(json.result);
+//
+//     }
+// });
+
+
+
   });
+
+//   var https = require('https');
+//
+// function convertCurrency(amount, fromCurrency, toCurrency, cb) {
+//   var apiKey = 'your-api-key-here';
+//
+//   fromCurrency = encodeURIComponent(fromCurrency);
+//   toCurrency = encodeURIComponent(toCurrency);
+//   var query = fromCurrency + '_' + toCurrency;
+//
+//   var url = 'https://api.currconv.com/api/v7/convert?q='
+//             + query + '&compact=ultra&apiKey=' + apiKey;
+//
+//   https.get(url, function(res){
+//       var body = '';
+//
+//       res.on('data', function(chunk){
+//           body += chunk;
+//       });
+//
+//       res.on('end', function(){
+//           try {
+//             var jsonObj = JSON.parse(body);
+//
+//             var val = jsonObj[query];
+//             if (val) {
+//               var total = val * amount;
+//               cb(null, Math.round(total * 100) / 100);
+//             } else {
+//               var err = new Error("Value not found for " + query);
+//               console.log(err);
+//               cb(err);
+//             }
+//           } catch(e) {
+//             console.log("Parse error: ", e);
+//             cb(e);
+//           }
+//       });
+//   }).on('error', function(e){
+//         console.log("Got an error: ", e);
+//         cb(e);
+//   });
+// }
+//
+// //uncomment to test
+// /*
+// convertCurrency(10, 'USD', 'PHP', function(err, amount) {
+//   console.log(amount);
+// });
+// */
+// const axios = require('../01/index')
+//   axios
+//     .get('https://currate.ru/api/?get=rates&pairs=USDRUB,EURRUB&key=763cfb0fa49f7c16319810bbf106680d')
+//     .then(response => (this.info = response.data.bpi));
+
+// axios
+//   .get('https://currate.ru/api/?get=rates&pairs=USDRUB,EURRUB&key=763cfb0fa49f7c16319810bbf106680d')
+//   .then(response => (console.log(response.data)));
+
+
 
 </script>

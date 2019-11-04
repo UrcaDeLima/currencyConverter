@@ -1,0 +1,78 @@
+.conteiner{
+  width: 1000px;
+  position: absolute;
+  top: 20%;
+  left: 20%;
+}
+
+.converter-switcher{
+  float: left;
+}
+
+select{
+  float: left;
+  display: block !important;
+}
+
+.list{
+  width: 85px;
+  height: 40px;
+}
+
+.calc_switcher_item{
+  border-left: 1px solid #cdcdcd;
+  border-radius: 4px 0 0 4px;
+  width: 85px;
+  height: 40px;
+  padding: 8px 0;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-top: 1px solid #cdcdcd;
+  border-bottom: 1px solid #cdcdcd;
+  border-right: 1px solid #cdcdcd;
+  float: left;
+  text-align: center;
+  position: relative;
+}
+
+.active{
+  color: #fff;
+  background-color: #16b67f;
+}
+
+#convert-to{
+  float: right;
+}
+
+#convert-from{
+  float: left;
+}
+
+.input{
+  margin: 24px 0;
+  padding: 30px 20px 15px;
+  border: 1px solid #cdcdcd;
+}
+
+.helper{
+  width: 100%;
+  height: 14px;
+  text-transform: uppercase;
+  color: #777;
+}
+
+.calc__center{
+  width: 150px;
+  padding-top: 70px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.calc__reverse{
+  width: 100px;
+  min-height: 70px;
+  background: url('https://thumbs.dreamstime.com/b/%D0%BF%D1%80%D0%BE%D1%82%D0%B8%D0%B2%D0%BE%D0%BF%D0%BE%D0%BB%D0%BE%D0%B6%D0%BD%D1%8B%D1%85-%D1%81%D1%82%D1%80%D0%B5%D0%BB%D0%BA%D0%B8-102852969.jpg') no-repeat 50%;
+  background-size: 100px;
+  margin: 0 auto;
+  cursor: pointer;
+}
