@@ -62,7 +62,7 @@
         console.log(error);
       })
   }
-  console.log(conversion(1, 2));
+  console.log(conversion(1, 2).data);
 
   $("#convert-from .amount").on("input", function(){
     $("#convert-to .amount").val($(this).val() * $("#convert-from .helper").text());
