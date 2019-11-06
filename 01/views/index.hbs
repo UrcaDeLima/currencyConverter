@@ -15,7 +15,7 @@
     <br>
     <div class="input">
       <input type="text" class="amount">
-      <div class="helper">2</div>
+      <div class="helper">1 <div class="currensy-from"></div> = <div class="counter-currensy-to"></div> <div class="currensy-to"></div></div>
     </div>
   </div>
   <div class="calc__center">
@@ -35,34 +35,40 @@
     <br>
     <div class="input">
       <input type="text" class="amount" readonly>
-      <div class="helper">1$ = 64р</div>
+      <div class="helper"><div class="float"></div>1 <div class="currensy-from float"></div> = <div class="counter-currensy-to float"></div> <div class="currensy-to float"></div></div>
     </div>
   </div>
 </div>
 
 <script type="text/javascript">
 
-  const getPrices = (convertFrom, convertTo) => {
-    try {//http://apilayer.net/api/live?access_key=e51025cf18fbbc92b1211172d722d1ef&currencies="+ convertTo +"&source="+ convertFrom +"&format=1
-      //console.log(convertFrom);
-      return axios.get('http://data.fixer.io/api/latest?access_key=515ab4b259053480b6f00bc6961bb954');
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  const url = 'https://cors-anywhere.herokuapp.com/https://currate.ru/api/?get=rates&pairs=';
+  const key = '&key=763cfb0fa49f7c16319810bbf106680d';
+  let pairs = ['EURRUB', 'EURUSD', 'EURGBP', 'EURJPY', 'RUBEUR', 'USDEUR', 'GBPEUR', 'JPYEUR'];
+  let currency = [], from, to;
 
-  const conversion = async (convertFrom, convertTo) => {
-    const prices = getPrices(convertFrom, convertTo)
-      .then(response => {
-        console.log(response.data);
-        return response;
-        $("#convert-from input").val(response.data.rates.AED);
-      })
-      .catch(error => {
-        console.log(error);
-      })
-  }
-  console.log(conversion(1, 2).data);
+
+  // const getPrices = (convertFrom, convertTo) => {
+  //   try {//http://apilayer.net/api/live?access_key=e51025cf18fbbc92b1211172d722d1ef&currencies="+ convertTo +"&source="+ convertFrom +"&format=1
+  //     //console.log(convertFrom);
+  //     return axios.get('http://data.fixer.io/api/latest?access_key=515ab4b259053480b6f00bc6961bb954');
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
+  //
+  // const conversion = async (convertFrom, convertTo) => {
+  //   const prices = getPrices(convertFrom, convertTo)
+  //     .then(response => {
+  //       console.log(response.data);
+  //       return response;
+  //       $("#convert-from input").val(response.data.rates.AED);
+  //     })
+  //     .catch(error => {
+  //       console.log(error);
+  //     })
+  // }
+  // console.log(conversion(1, 2).data);
 
   $("#convert-from .amount").on("input", function(){
     $("#convert-to .amount").val($(this).val() * $("#convert-from .helper").text());
@@ -113,6 +119,17 @@
   $(".items").on("click", ".calc_switcher_item", function(){
       $("[id=" + $(this).parent().parent().attr("id") + "] .active").removeClass("active");
       $(this).addClass("active");
+      from = $("#convert-from .active").text();
+      to = $("#convert-to .active").text();
+      if(from == to){
+        $("#convert-from .counter-currensy-to").text(1);
+        $("#convert-to .counter-currensy-to").text(1);
+      }else{
+        axios
+          .get(url + from + to + "," + to + from + key)
+          .then(response => (calculatingPrice(response.data, from, to)));
+      }
+      changeCurrency();
   });
 
   $(".list").on("change", function(){
@@ -120,14 +137,55 @@
       $(this).addClass("active");
   });
 
-  $(document).ready(function(){
-    for(var i = 0; i < 4; i++){ // после получения через api списка валют поменять 4 на количество этих валют
-      var elementClassic = '<div class="calc_switcher_item" data="'+ i +'">USD</div>';
-      $('.items').append(elementClassic);
-    }
+  axios
+    .get(url + pairs + key)
+    .then(response => (fillingMainCurrency(response.data)));
 
-    $(".items").find(':first-child').addClass("active");
+  $(document).ready(function(){
+      $(".items").find(':first-child').addClass("active");
+      changeCurrency();
+      $("#convert-from .counter-currensy-to").text(1);
+      $("#convert-to .counter-currensy-to").text(1);
   });
+
+  function calculatingPrice(res, from, to){
+    $("#convert-from .counter-currensy-to").text(res.data[from + to]);
+    $("#convert-to .counter-currensy-to").text(res.data[to + from]);
+  }
+
+  function changeCurrency(){
+    $("#convert-from .currensy-from").text($("#convert-from .active").text());
+    $("#convert-to .currensy-from").text($("#convert-to .active").text());
+    $("#convert-from .currensy-to").text($("#convert-to .active").text());
+    $("#convert-to .currensy-to").text($("#convert-from .active").text());
+  }
+
+  function separation(string, currency){
+    let arr;
+    for(const [key, value] of Object.entries(string)){
+      arr = [key[0] + key[1] + key[2], key[3] + key[4] + key[5]];
+      if(key == currency){
+        return arr;
+      }
+    }
+  }
+
+  function fillingMainCurrency(arr){
+    console.log(arr.data);
+    let i = 0;
+    for(const [key, value] of Object.entries(arr.data)){
+      if(i > 3){
+        return;
+      }
+      if(currency.indexOf( separation(arr.data, key)[0] ) == -1 || currency[0] == null){
+        currency.push(separation(arr.data, key)[0]);
+        console.log(currency.indexOf( separation(arr.data, key)[0] ));
+        var elementClassic = '<div class="calc_switcher_item" data="'+ separation(arr.data, key)[0] +'">'+ separation(arr.data, key)[0] +'</div>';
+        $('.items').append(elementClassic);
+        i++;
+      }
+    }
+  }
 
   $(document).ready(function(){
     // $.ajax({
@@ -445,9 +503,7 @@
 //     .get('https://currate.ru/api/?get=rates&pairs=USDRUB,EURRUB&key=763cfb0fa49f7c16319810bbf106680d')
 //     .then(response => (this.info = response.data.bpi));
 
-// axios
-//   .get('https://currate.ru/api/?get=rates&pairs=USDRUB,EURRUB&key=763cfb0fa49f7c16319810bbf106680d')
-//   .then(response => (console.log(response.data)));
+
 
 
 

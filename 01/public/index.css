@@ -5,6 +5,10 @@
   left: 20%;
 }
 
+.float{
+  float: right;
+}
+
 .converter-switcher{
   float: left;
 }

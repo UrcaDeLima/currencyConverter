@@ -1,5 +1,5 @@
 const express    = require('express')
-const mongoose   = require('mongoose')
+//const mongoose   = require('mongoose')
 const exphbs     = require('express-handlebars')
 const todoRoutes = require('./routes/todos')
 const path       = require('path')
