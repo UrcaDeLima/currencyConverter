@@ -6,7 +6,7 @@
 }
 
 .float{
-  float: right;
+  display: inline-block;
 }
 
 .converter-switcher{
