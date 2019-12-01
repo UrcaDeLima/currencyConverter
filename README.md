@@ -1,7 +1,7 @@
 # profiTestTask
 
-1) git clone https://github.com/UrcaDeLima/profiTestTask.git
-2) cd profiTestTask
+1) git clone https://github.com/UrcaDeLima/currencyConverter.git
+2) cd currencyConverter
 3) cd 01
 4) npm install
 5) npm run dev
